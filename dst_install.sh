@@ -15,7 +15,11 @@ echo "========================================"
 # 1. 调用 SteamCMD 下载/更新
 # 343050 是饥荒联机版的 AppID
 echo "⬇️  正在下载游戏文件 (约 1GB+，请耐心等待)..."
-$STEAMCMD +force_install_dir $DST_DIR +login anonymous +app_update 343050 +quit
+$STEAMCMD \
+    +force_install_dir $DST_DIR \
+    +login anonymous \
+    +app_update 343050 \
+    +quit
 
 echo "✅ 游戏文件下载完成。"
 
