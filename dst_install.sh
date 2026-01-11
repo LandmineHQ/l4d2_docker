@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e # 遇到错误立即停止
 
+WORKDIR="/workspace"
+
 # 定义内部路径 (对应 Docker 内部路径)
-STEAMCMD="/home/steam/steamcmd/steamcmd.sh"
-DST_DIR="/home/steam/dst_server"
-KLEI_DIR="/home/steam/.klei"
+STEAMCMD="${WORKDIR}/steamcmd/steamcmd.sh"
+DST_DIR="${WORKDIR}/dst_server"
+KLEI_DIR="${WORKDIR}/.klei"
 
 echo "========================================"
 echo "🚀 [DST Installer] 开始安装/更新饥荒服务端..."

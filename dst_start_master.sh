@@ -3,14 +3,14 @@
 
 source dst_config.sh
 
-# 1. 进入游戏二进制目录 (必须步骤，否则报错找不到库)
+# 1. 进入游戏二进制目录
 cd "$DST_BIN" || { echo "❌ 错误: 找不到目录 $DST_BIN"; exit 1; }
 
 echo "🚀 [地面世界] 正在启动..."
 echo "   程序位置: $(pwd)"
 echo "   存档名称: $CLUSTER_NAME"
 
-# 2. 启动游戏 (使用 exec 替换当前进程，让 MCSM 能接收到停止信号)
+# 2. 启动游戏
 exec ./dontstarve_dedicated_server_nullrenderer_x64 \
     -console \
     -cluster "$CLUSTER_NAME" \

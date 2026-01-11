@@ -1,0 +1,1 @@
+docker build . -t steamcmd:0.0.1
