@@ -1,32 +1,44 @@
-#!/bin/bash
-set -e # 遇到错误立即停止
+#!/usr/bin/env bash
+set -euo pipefail
 
-WORKDIR="/workspace"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/dst_config.sh"
 
-# 定义内部路径 (对应 Docker 内部路径)
-STEAMCMD="${WORKDIR}/steamcmd/steamcmd.sh"
-DST_DIR="${WORKDIR}/dst_server"
-KLEI_DIR="${WORKDIR}/.klei"
+if [[ ! -x "${STEAMCMD}" ]]; then
+  echo "错误：未找到 SteamCMD：${STEAMCMD}"
+  echo "请先执行 steamcmd_install.sh"
+  exit 1
+fi
 
-echo "========================================"
-echo "🚀 [DST Installer] 开始安装/更新饥荒服务端..."
-echo "========================================"
-
-# 1. 调用 SteamCMD 下载/更新
-# 343050 是饥荒联机版的 AppID
-echo "⬇️  正在下载游戏文件 (约 1GB+，请耐心等待)..."
-$STEAMCMD \
-    +force_install_dir $DST_DIR \
-    +login anonymous \
-    +app_update 343050 \
-    +quit
-
-echo "✅ 游戏文件下载完成。"
+mkdir -p "${L4D2_DIR}"
 
 echo "========================================"
-echo "🎉 安装流程结束！"
-echo "📂 游戏位置: $DST_DIR"
-echo "📂 配置位置: $KLEI_DIR/DoNotStarveTogether"
-echo "⚠️  提示: 请确保在主机的存档目录中放入 cluster_token.txt"
+echo "[L4D2 安装器] 开始安装或更新"
+echo "SteamCMD: ${STEAMCMD}"
+echo "目标目录: ${L4D2_DIR}"
+echo "AppID:    ${L4D2_APP_ID}"
+echo "分支:     ${L4D2_BRANCH}"
+echo "校验:     ${L4D2_VALIDATE}"
 echo "========================================"
 
+# 组装 app_update 参数，支持分支和 validate。
+app_update_cmd=(+app_update "${L4D2_APP_ID}")
+
+if [[ "${L4D2_BRANCH}" != "public" ]]; then
+  app_update_cmd+=(-beta "${L4D2_BRANCH}")
+fi
+
+if [[ "${L4D2_VALIDATE}" == "1" ]]; then
+  app_update_cmd+=(validate)
+fi
+
+"${STEAMCMD}" \
+  +force_install_dir "${L4D2_DIR}" \
+  +login anonymous \
+  "${app_update_cmd[@]}" \
+  +quit
+
+echo "========================================"
+echo "L4D2 服务端文件已就绪"
+echo "路径: ${L4D2_DIR}"
+echo "========================================"

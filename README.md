@@ -1,52 +1,102 @@
-# Don't Starve Together 专用服务器 Docker 镜像
+# Left 4 Dead 2 专用服务器 Docker 脚本
 
-## 简介
+本项目提供一套基于 SteamCMD 的 **Left 4 Dead 2（L4D2）** 专用服务器 Docker 安装与更新脚本。
 
-本项目提供了一个基于 `steamcmd` 的 **Don't Starve Together (DST)** 专用服务器 Docker 镜像的构建配置。它旨在提供一个干净、可重复的环境，特别优化了与 **MCSM (Minecraft Server Manager)** 等面板的集成，确保游戏文件和配置数据的持久化。
+说明：为了兼容现有流程，脚本文件名仍保留 `dst_*`，但内容已经全部切换为 L4D2。
 
-## 核心文件说明
+## 文件说明
 
-| 文件名 | 作用 | 详细说明 |
-| :--- | :--- | :--- |
-| `Dockerfile` | 镜像构建文件 | 基于 Debian 系统，安装必要的 32 位和 64 位依赖，创建名为 `steam` 的非特权用户（UID/GID 默认为 1001），并安装 SteamCMD。 |
-| `install_dst.sh` | 游戏安装脚本 | 使用 SteamCMD 匿名登录并下载/更新 DST 专用服务器文件（AppID: 343050）到容器内的 `/home/steam/dst_server` 目录。 |
-| `dst_config.sh` | 环境变量配置 | 定义了游戏二进制文件路径 (`DST_BIN`) 和集群名称 (`CLUSTER_NAME`) 等关键环境变量。 |
-| `start_master.sh` | 启动主世界 | 启动 DST 专用服务器的主世界（Master Shard）。 |
-| `start_caves.sh` | 启动洞穴世界 | 启动 DST 专用服务器的洞穴世界（Caves Shard）。 |
+- `Dockerfile`：基于 Ubuntu 24.04，安装 L4D2 服务端需要的 32 位运行库。
+- `docker_build.sh`：构建镜像（默认标签 `steamcmd-l4d2:0.0.1`）。
+- `steamcmd_download.sh`：在宿主机下载 `steamcmd_linux.tar.gz`。
+- `steamcmd_install.sh`：在容器内安装 SteamCMD 到 `/workspace/steamcmd`。
+- `dst_config.sh`：L4D2 运行参数默认值（端口、地图、模式、GSLT 等）。
+- `dst_install.sh`：安装或更新 L4D2 专用服务器（`AppID 222860`）。
+- `dst_start.sh`：通过 `srcds_run` 启动 L4D2 服务端。
 
-## 脚本功能详解
+## 快速开始
 
-### `install_dst.sh`
-
-该脚本是首次运行或更新游戏时使用的核心脚本。
-
-1.  **功能**: 调用 SteamCMD，使用 `+app_update 343050` 命令下载或更新 DST 专用服务器文件。
-2.  **安装路径**: 游戏文件会被安装到容器内的 `/home/steam/dst_server` 目录。
-3.  **配置提示**: 脚本提示用户需要将 `cluster_token.txt` 放置在配置目录中，以确保服务器能够正常运行。
-
-## MCSM Docker 配置与数据持久化
-
-为了确保游戏数据、存档和配置在容器重启后不会丢失，您需要在 MCSM 或其他 Docker 管理工具中配置卷（Volume）挂载。
-
-以下是必须进行持久化挂载的容器内部目录：
-
-| 容器内部路径 | 宿主机挂载路径 (示例) | 作用 |
-| :--- | :--- | :--- |
-| `/home/steam/dst_server` | `/path/to/dst_server` | **游戏文件目录**。包含游戏二进制文件和 SteamCMD 下载的所有内容。 |
-| `/home/steam/.klei` | `/path/to/klei_config` | **服务器配置和存档目录**。包含 `DoNotStarveTogether` 文件夹，其中存放了 `cluster.ini`、存档文件、Mod 配置等。 |
-
-### ⚠️ 权限设置重要提醒 ⚠️
-
-`Dockerfile` 中创建了名为 `steam` 的非特权用户来运行服务器，以提高安全性。该用户在容器内部的 **UID (用户ID)** 和 **GID (用户组ID)** 默认为 **`1001:1001`**。
-
-**问题**: 如果宿主机上挂载的目录（例如 `/path/to/dst_server` 和 `/path/to/klei_config`）的所有者不是 `1001:1001`，容器内的 `steam` 用户将没有权限读写这些目录，导致服务器启动失败或无法保存存档。
-
-**解决方案**: 在启动容器之前，您必须在宿主机上将挂载目录的所有权更改为 `1001:1001`。
+1. 在宿主机下载 SteamCMD 压缩包：
 
 ```bash
-# 假设您的挂载目录是 /opt/dst_data/dst_server 和 /opt/dst_data/.klei
-sudo chown -R 1001:1001 /opt/dst_data/dst_server
-sudo chown -R 1001:1001 /opt/dst_data/.klei
+bash steamcmd_download.sh
 ```
 
-请务必执行此步骤，否则容器将无法正常运行。
+2. 构建镜像：
+
+```bash
+bash docker_build.sh
+```
+
+3. 启动容器并挂载持久化目录：
+
+```bash
+docker run -it --rm \
+  --name l4d2-server \
+  -v /opt/l4d2:/workspace \
+  -p 27015:27015/udp \
+  -p 27015:27015/tcp \
+  -p 27005:27005/udp \
+  -p 27020:27020/udp \
+  steamcmd-l4d2:0.0.1 bash
+```
+
+4. 在容器内依次执行：
+
+```bash
+bash steamcmd_install.sh
+bash dst_install.sh
+bash dst_start.sh
+```
+
+## 更新服务器
+
+在容器内重新执行安装脚本即可更新：
+
+```bash
+bash dst_install.sh
+```
+
+如需完整校验文件：
+
+```bash
+L4D2_VALIDATE=1 bash dst_install.sh
+```
+
+## 运行参数说明
+
+默认参数在 `dst_config.sh` 中定义，也可以通过环境变量覆盖。
+
+常用参数：
+
+- `L4D2_APP_ID`：默认 `222860`
+- `L4D2_BRANCH`：默认 `public`
+- `L4D2_VALIDATE`：`0` 或 `1`
+- `SERVER_NAME`：服务器名称
+- `MAP`：启动地图，默认 `c1m1_hotel`
+- `GAME_MODE`：游戏模式，默认 `coop`
+- `MAX_PLAYERS`：最大玩家数，默认 `4`
+- `HOST_PORT`：主服务端口，默认 `27015`
+- `CLIENT_PORT`：客户端端口，默认 `27005`
+- `TV_PORT`：SourceTV 端口，默认 `27020`
+- `GSLT`：Steam 游戏服务器登录令牌（可选）
+- `EXTRA_ARGS`：附加 `srcds_run` 参数（可选）
+
+示例：
+
+```bash
+SERVER_NAME="My L4D2 Server" \
+MAP="c5m1_waterfront" \
+GAME_MODE="versus" \
+MAX_PLAYERS=8 \
+GSLT="YOUR_TOKEN" \
+bash dst_start.sh
+```
+
+## 注意事项
+
+- 请确保 `/workspace` 做了卷挂载，避免容器重建后数据丢失。
+- 游戏文件默认位于 `/workspace/l4d2_server`。
+- 常用服务端配置文件路径：
+  `/workspace/l4d2_server/left4dead2/cfg/server.cfg`
+- 请确保宿主机挂载目录对容器内 `steam` 用户有读写权限。
