@@ -6,7 +6,7 @@ export STEAMCMD="${STEAMCMD:-${WORKDIR}/steamcmd/steamcmd.sh}"
 export L4D2_DIR="${L4D2_DIR:-${WORKDIR}/l4d2_server}"
 
 # -------------------- 安装/更新参数 --------------------
-export L4D2_APP_ID="${L4D2_APP_ID:-222860}"
+export L4D2_APP_ID="${L4D2_APP_ID:-222840}"
 export L4D2_BRANCH="${L4D2_BRANCH:-public}"
 export L4D2_VALIDATE="${L4D2_VALIDATE:-0}"
 
