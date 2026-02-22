@@ -6,11 +6,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN set -e; \
     dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt update && \
+    apt install -y --no-install-recommends \
         ca-certificates \
-        lib32gcc-s1 \
-        lib32stdc++6 \
+        libc6:i386 \
+        libgcc-s1:i386 \
+        libstdc++6:i386 \
         libcurl3-gnutls:i386 \
         libcurl3-gnutls && \
     rm -rf /var/lib/apt/lists/*

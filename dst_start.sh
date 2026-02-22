@@ -29,6 +29,7 @@ cmd=(
   -game left4dead2
   -console
   -usercon
+  -tickrate 100
   -port "${HOST_PORT}"
   +clientport "${CLIENT_PORT}"
   +tv_port "${TV_PORT}"
