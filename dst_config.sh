@@ -14,7 +14,8 @@ export L4D2_VALIDATE="${L4D2_VALIDATE:-0}"
 export SERVER_NAME="${SERVER_NAME:-L4D2 Docker Server}"
 export MAP="${MAP:-c1m1_hotel}"
 export GAME_MODE="${GAME_MODE:-coop}"
-export MAX_PLAYERS="${MAX_PLAYERS:-4}"
+export SV_SET_MAX="${SV_SET_MAX:-31}"
+export SV_MAX_PLAYERS="${SV_MAX_PLAYERS:-31}"
 
 # -------------------- 网络端口 --------------------
 export HOST_PORT="${HOST_PORT:-27015}"
